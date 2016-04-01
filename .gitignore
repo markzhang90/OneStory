@@ -60,3 +60,10 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+#Djsngo
+.gitignore
+/dj_onestory/manage.py
+/dj_onestory/dj_onestory/settings.py
+/dj_onestory/*/migrations/*
+#/dj_onestory/*/__init__.py
