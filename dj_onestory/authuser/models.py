@@ -29,11 +29,7 @@ class OneStoryUserManager(BaseUserManager):
         Creates and saves a superuser with the given email, date of
         birth and password.
         """
-        user = self.create_user(email,
-            password=password,
-            date_of_birth=date_of_birth,
-            phone=phone,
-        )
+        user = self.create_user(email, password=password, date_of_birth=date_of_birth, phone=phone,)
         user.is_admin = True
         user.save(using=self._db)
         return user
@@ -88,3 +84,4 @@ class OneStoryUser(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
