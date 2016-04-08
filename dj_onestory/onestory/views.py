@@ -13,7 +13,7 @@ def index(request):
 def login_to_sys(request):
 
     data = dict()
-    data['username'] = 'markzhang90@gmail.com'
+    data['username'] = 'markzhang90@cat.com'
     data['password'] = 'wc45612301'
     target_url = 'http://localhost:8000/authuser/loginapi/'
     request_para = urllib.parse.urlencode(data).encode('UTF-8')

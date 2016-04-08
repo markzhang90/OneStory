@@ -7,6 +7,8 @@ from django.contrib.auth.hashers import make_password, check_password
 from .forms import UserForm, LoginForm
 from .models import OneStoryUser, OneStoryUserManager
 
+import json
+from core_lib.redis_manager import RedisManager
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls inde1111x.")
@@ -67,11 +69,16 @@ def login_api(request):
         password = post_data['password']
         user = auth.authenticate(email=username, password=password)
         if user and user.is_authenticated():
+            redis_obj = RedisManager()
             # auth.login(request, user)
-            pkey = user.pk
-            request.session[pkey] = user.email
-            print(request.session.get(pkey))
-            return HttpResponse(pkey)
+            # print(type(user))
+            user_array = {}
+            user_array['pk'] = user.pk
+            user_array['nickname'] = user.nick_name
+            user_array['email'] = user.email
+            user_obj = json.dumps(user_array)
+            redis_obj.login_update(user.pk, user_obj)
+            return HttpResponse('200 ok')
         else:
             return HttpResponse('faiiiil')
     else:
@@ -90,7 +97,8 @@ def get_login_user(request):
     if request.method == "POST":
         get_data = request.POST
         pk = get_data['pk']
-        print(pk)
-        return HttpResponse(request.session.get(pk))
+        redis_obj = RedisManager()
+        data = redis_obj.read_from_cache(pk)
+        return HttpResponse(data)
     else:
         return HttpResponse('faiiiil')
