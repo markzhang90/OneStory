@@ -8,6 +8,7 @@ from .forms import UserForm, LoginForm
 from .models import OneStoryUser, OneStoryUserManager
 
 import json
+
 from core_lib.redis_manager import RedisManager
 
 def index(request):
@@ -72,13 +73,20 @@ def login_api(request):
             redis_obj = RedisManager()
             # auth.login(request, user)
             # print(type(user))
-            user_array = {}
+            user_array = dict()
             user_array['pk'] = user.pk
             user_array['nickname'] = user.nick_name
             user_array['email'] = user.email
             user_obj = json.dumps(user_array)
-            redis_obj.login_update(user.pk, user_obj)
-            return HttpResponse('200 ok')
+            response_key = redis_obj.login_update(user.pk, user_obj)
+            if response_key is not None:
+                response = HttpResponse(response_key)
+                response.set_cookie('passid', response_key)
+                response.content = user_obj
+                return response
+            else:
+                return HttpResponse('faiiiil')
+
         else:
             return HttpResponse('faiiiil')
     else:
@@ -98,7 +106,7 @@ def get_login_user(request):
         get_data = request.POST
         pk = get_data['pk']
         redis_obj = RedisManager()
-        data = redis_obj.read_from_cache(pk)
+        data = redis_obj.get_login(pk)
         return HttpResponse(data)
     else:
         return HttpResponse('faiiiil')
