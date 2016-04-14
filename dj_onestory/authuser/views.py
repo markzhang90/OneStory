@@ -75,20 +75,42 @@ def login_api(request):
             # print(type(user))
             user_array = dict()
             user_array['pk'] = user.pk
-            user_array['nickname'] = user.nick_name
             user_array['email'] = user.email
+            user_array['phone'] = user.phone
             user_obj = json.dumps(user_array)
             response_key = redis_obj.login_update(user.pk, user_obj)
+            user_array['passid'] = response_key
+            del(user_array['pk'])
             if response_key is not None:
                 response = HttpResponse(response_key)
                 response.set_cookie('passid', response_key)
-                response.content = user_obj
+                response.content = json.dumps(user_array)
                 return response
             else:
                 return HttpResponse('faiiiil')
 
         else:
             return HttpResponse('faiiiil')
+    else:
+        return HttpResponse('faiiiil')
+
+
+# register api
+@csrf_exempt
+def register_api(request):
+    if request.method == "POST":
+        post_data = request.POST
+        username = post_data['username']
+        password = post_data['password']
+        phone = post_data['phone']
+        date_of_birth = post_data['date_of_birth']
+        # 将表单写入数据库
+        user = OneStoryUser()
+        user.email = username
+        user.password = make_password(password)
+        user.phone = phone
+        user.date_of_birth = date_of_birth
+
     else:
         return HttpResponse('faiiiil')
 

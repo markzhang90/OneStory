@@ -42,14 +42,13 @@ class OneStoryUser(AbstractBaseUser):
         unique=True,
     )
     phone = models.BigIntegerField(unique=True)
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(null=True, blank=True)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    nick_name = models.CharField(max_length=20)
     personal_id = models.CharField(max_length=20)
-    create_time = models.DateTimeField(auto_now=True)
+    create_time = models.DateTimeField(auto_now_add=True)
 
     objects = OneStoryUserManager()
 
