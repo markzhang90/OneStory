@@ -11,6 +11,7 @@ import json
 
 from core_lib.redis_manager import RedisManager
 
+
 def index(request):
     return HttpResponse("Hello, world. You're at the polls inde1111x.")
 
@@ -69,6 +70,7 @@ def login_api(request):
         username = post_data['username']
         password = post_data['password']
         user = auth.authenticate(email=username, password=password)
+
         if user and user.is_authenticated():
             redis_obj = RedisManager()
             # auth.login(request, user)
@@ -98,22 +100,37 @@ def login_api(request):
 # register api
 @csrf_exempt
 def register_api(request):
+
+    result = dict()
     if request.method == "POST":
-        post_data = request.POST
-        username = post_data['username']
-        password = post_data['password']
-        phone = post_data['phone']
-        date_of_birth = post_data['date_of_birth']
-        # 将表单写入数据库
-        user = OneStoryUser()
-        user.email = username
-        user.password = make_password(password)
-        user.phone = phone
-        user.date_of_birth = date_of_birth
+        try:
+            post_data = request.POST
+
+            username = post_data['email']
+            password = post_data['password']
+            phone = post_data['phone']
+            date_of_birth = post_data['date_of_birth']
+            # 将表单写入数据库
+            user = OneStoryUser()
+            user.email = username
+            user.password = make_password(password)
+            user.phone = phone
+            user.date_of_birth = date_of_birth
+            user.save()
+
+            result['result'] = 'ok'
+            result['data'] = user.pk
+
+        except Exception as e:
+            result['result'] = 'fail'
+            result['data'] = 'insert error'
 
     else:
-        return HttpResponse('faiiiil')
-
+        result['result'] = 'fail'
+        result['data'] = 'post error'
+    response = HttpResponse()
+    response.content = json.dumps(result)
+    return response
 
 @csrf_exempt
 def logout_api(request):
