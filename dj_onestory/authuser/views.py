@@ -10,9 +10,13 @@ from .models import OneStoryUser, OneStoryUserManager
 import json
 
 from core_lib.redis_manager import RedisManager
+from core_lib.http_result import HttpResult
+from core_lib.cypher import Cipher
 
 
 def index(request):
+    cypher = Cipher()
+    cypher.rsa_encode('tom')
     return HttpResponse("Hello, world. You're at the polls inde1111x.")
 
 
@@ -65,6 +69,8 @@ def login(request):
 # login api
 @csrf_exempt
 def login_api(request):
+    response = HttpResult()
+
     if request.method == "POST":
         post_data = request.POST
         username = post_data['username']
@@ -83,25 +89,27 @@ def login_api(request):
             response_key = redis_obj.login_update(user.pk, user_obj)
             user_array['passid'] = response_key
             del(user_array['pk'])
-            if response_key is not None:
-                response = HttpResponse(response_key)
-                response.set_cookie('passid', response_key)
-                response.content = json.dumps(user_array)
-                return response
+            if response_key:
+                result = response.return_with_success(user_array)
+                return result
             else:
-                return HttpResponse('faiiiil')
+                result = response.return_with_error()
+                return result
 
         else:
-            return HttpResponse('faiiiil')
+            result = response.return_with_error()
+            return result
     else:
-        return HttpResponse('faiiiil')
+        result = response.return_with_error()
+        return result
 
 
 # register api
 @csrf_exempt
 def register_api(request):
+    response = HttpResult()
 
-    result = dict()
+    user_dic = dict()
     if request.method == "POST":
         try:
             post_data = request.POST
@@ -118,19 +126,27 @@ def register_api(request):
             user.date_of_birth = date_of_birth
             user.save()
 
-            result['result'] = 'ok'
-            result['data'] = user.pk
+            redis_obj = RedisManager()
 
+            user_array = dict()
+            user_array['pk'] = user.pk
+            user_array['email'] = user.email
+            user_array['phone'] = user.phone
+            user_obj = json.dumps(user_array)
+
+            response_key = redis_obj.login_update(user.pk, user_obj)
+            user_dic['passid'] = response_key
+            user_dic['pid'] = user.pk
+            result = response.return_with_success(user_dic)
+            return result
         except Exception as e:
-            result['result'] = 'fail'
-            result['data'] = 'insert error'
+            print(e)
+            result = response.return_with_error()
+            return result
 
-    else:
-        result['result'] = 'fail'
-        result['data'] = 'post error'
-    response = HttpResponse()
-    response.content = json.dumps(result)
-    return response
+
+    result = response.return_with_error()
+    return result
 
 @csrf_exempt
 def logout_api(request):
@@ -140,12 +156,18 @@ def logout_api(request):
 
 @csrf_exempt
 def get_login_user(request):
-    print(request.session)
+    response = HttpResult()
+
     if request.method == "POST":
         get_data = request.POST
         pk = get_data['pk']
         redis_obj = RedisManager()
-        data = redis_obj.get_login(pk)
-        return HttpResponse(data)
-    else:
-        return HttpResponse('faiiiil')
+        data = redis_obj.get_login(pk).decode()
+        user_dic = json.loads(data)
+        user_dic.pop('pk')
+        if data is not None:
+            result = response.return_with_success(user_dic)
+            return result
+
+    result = response.return_with_error()
+    return result

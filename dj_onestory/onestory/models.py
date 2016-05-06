@@ -12,6 +12,9 @@ class UserProfile(models.Model):
     nick_name = models.CharField(blank=True, max_length=255)
     ext = models.TextField(blank=True, default='')
 
+    def __str__(self):
+        return str(self.email)
+
 
 class Article(models.Model):
 
@@ -24,6 +27,9 @@ class Article(models.Model):
     link = models.CharField(max_length=255, blank=True)
     status = models.SmallIntegerField(default=1)
 
+    def __str__(self):
+        return str(self.pk)
+
 
 class Comment(models.Model):
 
@@ -34,3 +40,6 @@ class Comment(models.Model):
     content = models.TextField(blank=True)
     status = models.SmallIntegerField(default=1)
     ext = models.TextField(blank=True)
+
+    def __str__(self):
+        return str(self.pk)
