@@ -16,7 +16,9 @@ from core_lib.cypher import Cipher
 
 def index(request):
     cypher = Cipher()
-    cypher.rsa_encode('tom')
+    cypher.rsa_encode('maaaaaaak   zhang  daslk')
+    cypher.rsa_decode()
+    # cypher.rsa_encode('tom')
     return HttpResponse("Hello, world. You're at the polls inde1111x.")
 
 
