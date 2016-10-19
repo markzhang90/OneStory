@@ -5,7 +5,7 @@ from .models import Article, Comment, UserProfile
 
 
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ('author_passid', 'title', 'create_date', 'update_time', 'link', 'status')
+    list_display = ('pk', 'author_passid', 'title', 'create_date', 'update_time', 'link', 'status')
     empty_value_display = '-empty-'
 
     def author_passid(self, obj):

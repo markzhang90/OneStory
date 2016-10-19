@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^register/$', views.register_to_onestory, name='register'),
     url(r'^getaccount/$', views.get_log_in_user, name='get_log_in_user'),
     url(r'^insertarticle/$', views.insert_article, name='insert_article'),
+    url(r'^updatearticle/$', views.update_article, name='update_article'),
 ]

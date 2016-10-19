@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse,HttpRequest
+from django.conf import settings
 import urllib.parse, urllib.request
 import json
 
@@ -40,7 +41,8 @@ def login_to_sys(request):
                 cookie_array['value'] = data['passid']
                 cookie_list = list()
                 cookie_list.append(cookie_array)
-                result = response.return_with_cookie(data, cookie_list)
+                expire_time = settings.COOKIE_EXPIRE_TIME
+                result = response.return_with_cookie(data, cookie_list, expire_time)
                 return result
             else:
                 result = response.return_with_error(-1, "NO PASSID")
@@ -52,25 +54,27 @@ def login_to_sys(request):
 
 def get_log_in_user(request):
 
+    cookie_list = request.COOKIES
     response = HttpResult()
-
-    data = dict()
-    data['pk'] = 'a6574ffa5968ebfff7f63cdf5fa6c77b'
-    target_url = 'http://localhost:8000/authuser/getuserapi/'
-    request_para = urllib.parse.urlencode(data).encode('UTF-8')
-    url = urllib.request.Request(target_url, request_para)
-    req = urllib.request.urlopen(url)
-    req_back = req.read().decode('utf-8')
-    if req_back:
-        back_info = json.loads(req_back)
-        back_data = back_info['data']
-        cookie_array = dict()
-        cookie_array['key'] = 'PASSID'
-        cookie_array['value'] = data['pk']
-        cookie_list = list()
-        cookie_list.append(cookie_array)
-        result = response.return_with_cookie(back_data, cookie_list)
-        return result
+    if 'PASSID' in cookie_list.keys():
+        data = dict()
+        data['pk'] = cookie_list['PASSID']
+        target_url = 'http://localhost:8000/authuser/getuserapi/'
+        request_para = urllib.parse.urlencode(data).encode('UTF-8')
+        url = urllib.request.Request(target_url, request_para)
+        req = urllib.request.urlopen(url)
+        req_back = req.read().decode('utf-8')
+        if req_back:
+            back_info = json.loads(req_back)
+            back_data = back_info['data']
+            cookie_array = dict()
+            cookie_array['key'] = 'PASSID'
+            cookie_array['value'] = data['pk']
+            cookie_list = list()
+            cookie_list.append(cookie_array)
+            expire_time = settings.COOKIE_EXPIRE_TIME
+            result = response.return_with_cookie(back_data, cookie_list, expire_time)
+            return result
 
     result = response.return_with_error()
     return result
@@ -132,7 +136,8 @@ def register_to_onestory(request):
             cookie_array['value'] = bac_info['passid']
             cookie_list = list()
             cookie_list.append(cookie_array)
-            result = response.return_with_cookie(user_bac, cookie_list)
+            expire_time = settings.COOKIE_EXPIRE_TIME
+            result = response.return_with_cookie(user_bac, cookie_list, expire_time)
             return result
 
     result = response.return_with_error()
@@ -154,13 +159,13 @@ def insert_article(request):
     a_ext = "HERE"
     a_link = 'WWW.BAIDU.COM'
 
-    COOKIES = request.COOKIES
-    if not COOKIES['PASSID']:
+    cookie_list = request.COOKIES
+    if 'PASSID' not in cookie_list.keys():
         result = response.return_with_error(10, 'LOGIN FIRST')
         return result
 
     redis_obj = RedisManager()
-    data = redis_obj.get_login(COOKIES['PASSID']).decode()
+    data = redis_obj.get_login(cookie_list['PASSID']).decode()
     user_dic = json.loads(data)
     if not user_dic['pk']:
         result = response.return_with_error(10, 'LOGIN FIRST')
@@ -180,7 +185,55 @@ def insert_article(request):
     new_article.save()
 
     article = dict()
-    article['aid'] = new_article.pk;
+    article['aid'] = new_article.pk
     result = response.return_with_success(article)
     return result
 
+
+def update_article(request):
+    response = HttpResult()
+
+    if request.method == "POST":
+        post_data = request.POST
+        a_id = post_data['id']
+        a_title = post_data['title']
+        a_content = post_data['content']
+        a_ext = post_data['ext']
+        a_link = post_data['link']
+    a_id = 9
+    a_title = "shit"
+    a_content = "shit"
+    a_ext = "shit"
+    a_link = 'shit.BAIDU.COM'
+
+    cookie_list = request.COOKIES
+    if 'PASSID' not in cookie_list.keys():
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+
+    redis_obj = RedisManager()
+    user_data = redis_obj.get_login(cookie_list['PASSID']).decode()
+    if user_data is None:
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+
+    user_dic = json.loads(user_data)
+    if not user_dic['pk']:
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+    c_user = UserProfile.objects.filter(pk=user_dic['pk'])
+    if not c_user[0]:
+        result = response.return_with_error(10, 'USER FAIL')
+        return result
+    res = Article.objects.filter(pk=a_id).update(
+        title = a_title,
+        content = a_content,
+        ext = a_ext,
+        link = a_link
+    )
+    print(res)
+    if res != 1 :
+        result = response.return_with_error(res)
+    else:
+        result = response.return_with_success(res)
+    return result
