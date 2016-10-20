@@ -11,4 +11,8 @@ urlpatterns = [
     url(r'^getaccount/$', views.get_log_in_user, name='get_log_in_user'),
     url(r'^insertarticle/$', views.insert_article, name='insert_article'),
     url(r'^updatearticle/$', views.update_article, name='update_article'),
+    url(r'^deletearticle/$', views.del_article, name='del_article'),
+    url(r'^updatearticlestatus/$', views.update_article_status, name='update_article_status'),
+    url(r'^getarticle/$', views.get_article_by_id, name='get_article_by_id'),
+    url(r'^getuserarticles/$', views.get_article_list_by_uid, name='get_article_list_by_uid'),
 ]

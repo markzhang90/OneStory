@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse,HttpRequest
 from django.conf import settings
+from django.db import transaction
+from .app_settings import *
 import urllib.parse, urllib.request
 import json
 
@@ -146,7 +148,6 @@ def register_to_onestory(request):
 
 def insert_article(request):
     response = HttpResult()
-
     if request.method == "POST":
         post_data = request.POST
         a_title = post_data['title']
@@ -161,19 +162,19 @@ def insert_article(request):
 
     cookie_list = request.COOKIES
     if 'PASSID' not in cookie_list.keys():
-        result = response.return_with_error(10, 'LOGIN FIRST')
+        result = response.return_with_error(10, ERROR_FAIL)
         return result
 
     redis_obj = RedisManager()
     data = redis_obj.get_login(cookie_list['PASSID']).decode()
     user_dic = json.loads(data)
     if not user_dic['pk']:
-        result = response.return_with_error(10, 'LOGIN FIRST')
+        result = response.return_with_error(10, ERROR_FAIL)
         return result
 
     c_user = UserProfile.objects.filter(pk=user_dic['pk'])
     if not c_user[0]:
-        result = response.return_with_error(10, 'USER FAIL')
+        result = response.return_with_error(10, ERROR_FAIL)
         return result
 
     new_article = Article()
@@ -237,3 +238,137 @@ def update_article(request):
     else:
         result = response.return_with_success(res)
     return result
+
+
+def get_article_by_id(request):
+    response = HttpResult()
+
+    if request.method == "POST":
+        post_data = request.POST
+        a_id = post_data['id']
+    a_id = 5
+    try:
+        get_article = Article.objects.get(id=a_id)
+    except Exception as e:
+        result = response.return_with_error(10, 'get fail')
+        return result
+    return response.return_with_success(get_article.id)
+
+
+def get_article_list_by_uid(request):
+    response = HttpResult()
+    if request.method == "POST":
+        post_data = request.POST
+        u_id = post_data['uid']
+    u_id = 45
+    cur_page = 3
+    limit = ONE_PAGE_OF_DATA
+    start_pos = (cur_page - 1) * limit
+    end_pos = start_pos + limit
+    try:
+        get_article = Article.objects.all().filter(author__passid=u_id).order_by('-create_date')[start_pos:end_pos]
+    except Exception as e:
+        result = response.return_with_error(10, 'get fail')
+        return result
+    all_count = Article.objects.all().filter(author__passid=u_id).count()
+    all_page = int(all_count / limit)
+    remain_post = int(all_count % limit)
+    if remain_post > 0:
+        all_page += 1
+
+    print(get_article)
+    return response.return_with_success(all_page)
+
+def update_article_status(request):
+    response = HttpResult()
+
+    if request.method == "POST":
+        post_data = request.POST
+        a_id = post_data['id']
+        a_status = post_data['status']
+
+    a_id = 1
+    a_status = 3
+    cookie_list = request.COOKIES
+    if 'PASSID' not in cookie_list.keys():
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+
+    redis_obj = RedisManager()
+    user_data = redis_obj.get_login(cookie_list['PASSID']).decode()
+    if user_data is None:
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+
+    user_dic = json.loads(user_data)
+    if not user_dic['pk']:
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+    try:
+        c_user = UserProfile.objects.get(passid=user_dic['pk'])
+    except Exception as e:
+        result = response.return_with_error(10, 'USER FAIL')
+        return result
+    try:
+        get_user = Article.objects.get(id=a_id, author=c_user)
+    except Exception as e:
+        result = response.return_with_error(10, 'USER FAIL')
+        return result
+
+    try:
+        res = Article.objects.filter(pk=a_id).update(
+            status = a_status,
+        )
+    except Exception as e:
+        result = response.return_with_error(res)
+        return result
+    if res != 1 :
+        result = response.return_with_error(res)
+    else:
+        result = response.return_with_success(res)
+    return result
+
+
+@transaction.atomic()
+def del_article(request):
+    response = HttpResult()
+
+    if request.method == "POST":
+        post_data = request.POST
+        a_id = post_data['id']
+        a_title = post_data['title']
+        a_content = post_data['content']
+        a_ext = post_data['ext']
+        a_link = post_data['link']
+    a_id = 6
+
+    cookie_list = request.COOKIES
+    if 'PASSID' not in cookie_list.keys():
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+
+    redis_obj = RedisManager()
+    user_data = redis_obj.get_login(cookie_list['PASSID']).decode()
+    if user_data is None:
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+
+    user_dic = json.loads(user_data)
+    if not user_dic['pk']:
+        result = response.return_with_error(10, 'LOGIN FIRST')
+        return result
+    c_user = UserProfile.objects.filter(pk=user_dic['pk'])
+    sp1 = transaction.savepoint()
+    if not c_user[0]:
+        result = response.return_with_error(10, 'USER FAIL')
+        return result
+    (res, list) = Article.objects.filter(pk=a_id).delete()
+    transaction.savepoint_commit(sp1)
+    print(res)
+    if res != 1 :
+        result = response.return_with_error(res)
+    else:
+        result = response.return_with_success(res)
+    return result
+
+
