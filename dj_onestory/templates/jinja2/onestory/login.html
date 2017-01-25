@@ -1,0 +1,74 @@
+{% extends "onestory/base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+    body {
+      background-color: #DADADA;
+    }
+    body > .grid {
+      height: 100%;
+    }
+    #center {
+      margin-top: 100px;
+    }
+    .column {
+      max-width: 500px;
+    }
+xhprof_enable(XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY);
+$data = xhprof_disable();
+</style>
+<script src="/static/assets/library/jquery.min.js"></script>
+{% endblock %}
+{% block content %}
+<div id="center" class="ui middle aligned center aligned grid">
+     <div class="six wide column">
+     </div>
+    <div class="ten wide column">
+        <div class="ui middle aligned center aligned grid">
+            <div class="column">
+                <h2 class="ui teal image header">
+                    <img src="assets/images/logo.png" class="image">
+                    <div class="content">
+                        Log-in to your account
+                    </div>
+                </h2>
+                <form class="ui large form">
+                    <div class="ui stacked segment">
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="user icon"></i>
+                                <input type="text" name="email" placeholder="E-mail address">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="lock icon"></i>
+                                <input type="password" name="password" placeholder="Password">
+                            </div>
+                        </div>
+                        <div class="ui fluid large teal animated fade submit button" tabindex="0">
+                            <div class="hidden content">Login</div>
+                            <div class="visible content">
+                                <i class="shop icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="ui error message"></div>
+
+                </form>
+
+                <div class="ui fluid large animated fade button" tabindex="0">
+                    <div class="hidden content">快来加入吧</div>
+                    <div class="visible content">还没有账号?</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

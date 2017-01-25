@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <!--<link rel="stylesheet" href="style.css" />-->
+    <title>{% block title %}{% endblock %} - My Webpage</title>
+
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/reset.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/site.css">
+
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/container.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/grid.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/header.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/image.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/menu.css">
+
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/divider.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/dropdown.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/segment.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/button.css">
+
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/list.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/icon.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/sidebar.css">
+<link rel="stylesheet" type="text/css" href="/static/semantic/components/transition.css">
+    {% endblock %}
+
+    <!-- Standard Meta -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <!-- Site Properties -->
+  <title>Theming - Semantic</title>
+  <link rel="stylesheet" type="text/css" href="/static/semantic/semantic.css"/>
+</head>
+<body>
+    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="footer">
+        {% block footer %}
+        {% include "onestory/footer.html" %}
+        {% endblock %}
+    </div>
+</body>
+</html>

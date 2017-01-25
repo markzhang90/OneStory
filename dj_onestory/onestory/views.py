@@ -15,8 +15,13 @@ from core_lib.redis_manager import RedisManager
 
 
 def index(request):
-
-    return HttpResponse("Hello, world. You're at the polls index.")
+    test = dict()
+    test['question_text'] = 'ccccccoooooooooooo'
+    test['id'] = 10
+    list = [test]
+    context = {'latest_question_list': list}
+    return render(request, 'onestory/login.html', context)
+    # return HttpResponse("Hello, world. You're at the polls index.")
 
 
 def login_to_sys(request):
