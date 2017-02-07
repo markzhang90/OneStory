@@ -75,12 +75,21 @@ def login_api(request):
 
     if request.method == "POST":
         post_data = request.POST
+
+        if 'username' not in post_data or 'password' not in post_data:
+            result = response.return_with_error()
+            return result
+
         username = post_data['username']
         password = post_data['password']
         user = auth.authenticate(email=username, password=password)
 
         if user and user.is_authenticated():
-            redis_obj = RedisManager()
+            try:
+                redis_obj = RedisManager()
+            except Exception as e:
+                result = response.return_with_error()
+                return result
             # auth.login(request, user)
             # print(type(user))
             user_array = dict()
@@ -89,6 +98,7 @@ def login_api(request):
             user_array['phone'] = user.phone
             user_obj = json.dumps(user_array)
             response_key = redis_obj.login_update(user.pk, user_obj)
+            print(response_key)
             user_array['passid'] = response_key
             del(user_array['pk'])
             if response_key:

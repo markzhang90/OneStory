@@ -15,30 +15,36 @@
     .column {
       max-width: 500px;
     }
-xhprof_enable(XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY);
-$data = xhprof_disable();
+
+
 </style>
 <script src="/static/assets/library/jquery.min.js"></script>
 {% endblock %}
+
+{% include "onestory/fixheader.html" %}
+
 {% block content %}
+
 <div id="center" class="ui middle aligned center aligned grid">
-     <div class="six wide column">
-     </div>
-    <div class="ten wide column">
+
+    <div class="two wide column">
+    </div>
+    <div class="twelve wide column">
         <div class="ui middle aligned center aligned grid">
             <div class="column">
                 <h2 class="ui teal image header">
-                    <img src="assets/images/logo.png" class="image">
+                    <img src="/static/assets/images/logo.png" class="image">
                     <div class="content">
                         Log-in to your account
                     </div>
                 </h2>
-                <form class="ui large form">
+                <form class="ui large form" action="/onestory/logintosys/" method="POST">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                     <div class="ui stacked segment">
                         <div class="field">
                             <div class="ui left icon input">
                                 <i class="user icon"></i>
-                                <input type="text" name="email" placeholder="E-mail address">
+                                <input type="text" name="username" placeholder="User Name">
                             </div>
                         </div>
                         <div class="field">
@@ -48,13 +54,12 @@ $data = xhprof_disable();
                             </div>
                         </div>
                         <div class="ui fluid large teal animated fade submit button" tabindex="0">
-                            <div class="hidden content">Login</div>
-                            <div class="visible content">
-                                <i class="shop icon"></i>
-                            </div>
+                            <div type="submit" class="hidden content">确认</div>
+                            <div class="visible content">登录</div>
                         </div>
-                    </div>
+                        <button class="ui button" type="submit">Submit</button>
 
+                    </div>
 
                     <div class="ui error message"></div>
 
@@ -67,6 +72,8 @@ $data = xhprof_disable();
 
             </div>
         </div>
+    </div>
+    <div class="two wide column">
     </div>
 </div>
 
