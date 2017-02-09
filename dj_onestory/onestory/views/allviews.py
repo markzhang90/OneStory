@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse,HttpRequest
+from django.http import HttpResponse, HttpRequest
 from django.conf import settings
 from django.db import transaction
 from ..app_settings import *
@@ -11,11 +11,11 @@ from ..models import UserProfile, Article, Comment
 from core_lib.http_result import HttpResult
 from core_lib.redis_manager import RedisManager
 
+
 # Create your views here.
 
 
 def get_log_in_user(request):
-
     cookie_list = request.COOKIES
     response = HttpResult()
     if 'PASSID' in cookie_list.keys():
@@ -43,7 +43,6 @@ def get_log_in_user(request):
 
 
 def register_to_onestory(request):
-
     response = HttpResult()
 
     username = request.GET.get('username')
@@ -60,7 +59,7 @@ def register_to_onestory(request):
     firstname = 'zhang'
     lastname = 'mark'
     nickname = 'oooook'
-    birthddate ='1990-02-20'
+    birthddate = '1990-02-20'
     data = dict()
     data['email'] = username
     data['password'] = pw
@@ -182,18 +181,20 @@ def update_article(request):
     if not user_dic['pk']:
         result = response.return_with_error(10, 'LOGIN FIRST')
         return result
-    c_user = UserProfile.objects.filter(pk=user_dic['pk'])
-    if not c_user[0]:
-        result = response.return_with_error(10, 'USER FAIL')
+    try:
+        c_user = UserProfile.objects.get(pk=user_dic['pk'])
+    except UserProfile.DoesNotExist:
+        result = response.return_with_error(10, ERROR_FAIL)
         return result
+
     res = Article.objects.filter(pk=a_id).update(
-        title = a_title,
-        content = a_content,
-        ext = a_ext,
-        link = a_link
+        title=a_title,
+        content=a_content,
+        ext=a_ext,
+        link=a_link
     )
     print(res)
-    if res != 1 :
+    if res != 1:
         result = response.return_with_error(res)
     else:
         result = response.return_with_success(res)
@@ -239,6 +240,7 @@ def get_article_list_by_uid(request):
     print(get_article)
     return response.return_with_success(all_page)
 
+
 def update_article_status(request):
     response = HttpResult()
 
@@ -277,12 +279,12 @@ def update_article_status(request):
 
     try:
         res = Article.objects.filter(pk=a_id).update(
-            status = a_status,
+            status=a_status,
         )
     except Exception as e:
         result = response.return_with_error(res)
         return result
-    if res != 1 :
+    if res != 1:
         result = response.return_with_error(res)
     else:
         result = response.return_with_success(res)
@@ -317,18 +319,18 @@ def del_article(request):
     if not user_dic['pk']:
         result = response.return_with_error(10, 'LOGIN FIRST')
         return result
-    c_user = UserProfile.objects.filter(pk=user_dic['pk'])
-    sp1 = transaction.savepoint()
-    if not c_user[0]:
-        result = response.return_with_error(10, 'USER FAIL')
+
+    try:
+        c_user = UserProfile.objects.get(pk=user_dic['pk'])
+    except UserProfile.DoesNotExist:
+        result = response.return_with_error(10, ERROR_FAIL)
         return result
-    (res, list) = Article.objects.filter(pk=a_id).delete()
+
+    (res, list_res) = Article.objects.filter(pk=a_id).delete()
     transaction.savepoint_commit(sp1)
-    print(res)
-    if res != 1 :
+
+    if res != 1:
         result = response.return_with_error(res)
     else:
         result = response.return_with_success(res)
     return result
-
-

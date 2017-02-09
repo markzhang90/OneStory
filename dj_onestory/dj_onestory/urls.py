@@ -20,6 +20,6 @@ from django.conf.urls.static import static
 from django.conf import settings
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^onestory/', include('onestory.urls')),
+    url(r'^onestory/', include('onestory.urls', namespace="onestory")),
     url(r'^authuser/', include('authuser.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -3,7 +3,8 @@ from django.http import HttpResponse,HttpRequest
 from django.conf import settings
 from django.db import transaction
 from ..app_settings import *
-import urllib.parse, urllib.request
+import urllib.parse
+import urllib.request
 import json
 
 from ..models import UserProfile, Article, Comment
@@ -26,9 +27,6 @@ def login_to_sys(request):
     response = HttpResult()
     if request.method == 'POST':
         data = dict()
-        print(request.POST)
-        print(request.POST['password'])
-
         if request.POST['username']:
             data['username'] = request.POST['username']
         if request.POST['password']:
@@ -48,14 +46,22 @@ def login_to_sys(request):
                 return result
             else:
                 data = back_info['data']
-                if data['passid'] is not None:
-                    cookie_array = dict()
-                    cookie_array['key'] = 'PASSID'
-                    cookie_array['value'] = data['passid']
+                if data['passid'] is not None and data['pk'] is not None:
+                    cookie_dict = dict()
+                    cookie_dict['key'] = 'PASSID'
+                    cookie_dict['value'] = data['passid']
                     cookie_list = list()
-                    cookie_list.append(cookie_array)
+                    cookie_list.append(cookie_dict)
                     expire_time = settings.COOKIE_EXPIRE_TIME
-                    result = response.return_with_cookie(data, cookie_list, expire_time)
+                    try:
+                        c_user = UserProfile.objects.get(pk=data['pk'])
+                    except UserProfile.DoesNotExist:
+                        result = response.return_with_error(10, ERROR_FAIL)
+                        return result
+                    user_dict = dict()
+                    user_dict['passid'] = data['passid']
+                    user_dict['nickname'] = c_user.nick_name
+                    result = response.return_with_cookie(user_dict, cookie_list, expire_time)
                     return result
                 else:
                     result = response.return_with_error(-1, "NO PASSID")

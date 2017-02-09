@@ -98,9 +98,7 @@ def login_api(request):
             user_array['phone'] = user.phone
             user_obj = json.dumps(user_array)
             response_key = redis_obj.login_update(user.pk, user_obj)
-            print(response_key)
             user_array['passid'] = response_key
-            del(user_array['pk'])
             if response_key:
                 result = response.return_with_success(user_array)
                 return result
