@@ -1,6 +1,35 @@
+<div id="header-top">
 <div class="ui large top fixed menu">
     <div class="ui container">
-        <a class="item">Home</a>
-        <a class="active item">Sign In</a>
+    	<a v-for="(item,key) in loginheaders" :href="item.url" :class=" [ pagename == item.name ? 'item active' : 'item' ]" > ${ item.name }</a>
     </div>
 </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    var headerpage = new Vue({
+      delimiters : ['${', '}'],
+      el: '#header-top',
+      data: {
+      	pagename : "{{ header_text }}",
+        loginheaders : [
+	        {'name':'Home', 'url' : "{{ url("onestory:feed") }}"}, 
+	        {'name':'Profile', 'url' : "{{ url("onestory:login") }}"},
+	        {'name':'Setting' , 'url': '#'},
+        ],
+        unloginheaders : [
+			{'Home' : 'loacalhost'}, 
+	        {'Profile' : '127.0.0.1'},
+	        {'Setting' : '127.0.0.1'},
+        ],
+      },
+      methods: {
+        register: function() {
+          this.counter2 += 3
+        }
+      }   
+    })
+});
+
+</script>

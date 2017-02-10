@@ -1,0 +1,142 @@
+{% extends "onestory/base.html" %}
+{% block title %}Home{% endblock %}
+
+
+{% block head %}
+{{ super() }}
+
+<style type="text/css">
+    body {
+      background-color: #DADADA;
+    }
+    body > .grid {
+      height: 100%;
+    }
+    #feedpage {
+      margin-top: 100px;
+      margin-right: 30px;
+      margin-left: 30px;
+      margin-bottom: : 100px;
+    }
+    .column {
+      max-width: 500px;
+    }
+
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div id="feedpage">
+    <div id="center" class="ui middle aligned center aligned grid">
+
+        <div class="eight wide column">
+            <div id="datacard" class="ui card blurring">
+            <div class="ui inverted dimmer"></div>
+                <div class="content">
+                    <div class="left floated ">
+                    <img class="ui avatar image" src="/static/assets/images/avatar/tom.jpg">
+                    Elliot</div> 
+                    <div class="right floated meta">14h</div>
+                </div>
+                <div class="image">
+                    <img src="/static/assets/images/avatar/tom.jpg">
+                </div>
+                <div class="content">
+                    <div class="header">Watchmen</div>
+                    <div class="description">In a gritty and alternate 1985 the glory days of costumed vigilantes have
+                        been brought to a close by a government crackdown, but after one of the masked veterans is
+                        brutally murdered an investigation into the killer is initiated.
+                    </div>
+                </div>
+                <div class="ui two bottom attached buttons">
+                    <div class="ui button"><i class="add icon"></i> Queue</div>
+                    <div class="ui primary button"><i class="add icon"></i> Watch</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <div class="ui card">
+                <div class="content">
+                    <div class="left floated ">
+                    <img class="ui avatar image" src="/static/assets/images/avatar/tom.jpg">
+                    Elliot</div> 
+                    <div class="right floated meta">14h</div>
+                </div>
+                <div class="image">
+                    <img src="/static/assets/images/avatar/tom.jpg">
+                </div>
+                <div class="content">
+                    <div class="header">Watchmen</div>
+                    <div class="description">In a gritty and alternate 1985 the glory days of costumed vigilantes have
+                        been brought to a close by a government crackdown, but after one of the masked veterans is
+                        brutally murdered an investigation into the killer is initiated.
+                    </div>
+                </div>
+                <div class="ui two bottom attached buttons">
+                    <div v-on:click="swingOut" class="ui button"><i class="add icon"></i> Queue</div>
+                    <div class="ui primary button"><i class="add icon"></i> Watch</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+<script type="text/javascript">
+$(function() {
+    var thispage = new Vue({
+      delimiters : ['${', '}'],
+      el: '#feedpage',
+      data: {
+        pass_name: '',
+        pass_word: '',
+        counter: 0,
+        return_info: {},
+        passid : '',
+        nickname : '',
+      },
+      methods: {
+        swingOut(){
+            $('#datacard').dimmer('show');
+
+            $('#datacard')
+            .transition('fly right', 1500, function(){
+                var _self = this
+                this.counter += 1
+                var inputdata = {}
+                inputdata['username'] = 'tom'
+                inputdata['password'] = 123
+                inputdata['csrfmiddlewaretoken'] = "{{ csrf_token }}"
+                $.ajax({
+                    type: "POST",
+                    url: "{{ url("onestory:loginpost") }}",
+                    data: inputdata,
+                    dataType: "json",
+                    beforeSend: function(){
+                        console.log(1111)
+                    },
+                    success: function(data){
+                        console.log(data)
+                    },
+                    error: function(e) { 
+                        alert("登录失败")
+                    },
+                    complete: function(){
+                        $('#datacard').dimmer('hide');
+                        $('#datacard').transition('fly right')
+                    },
+                })
+            })
+
+            
+        },
+      }   
+    })
+
+});
+
+</script>
+{% endblock %}

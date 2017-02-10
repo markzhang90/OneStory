@@ -5,8 +5,9 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.userview.index, name='index'),
-    url(r'^logintosys/$', views.userview.login_to_sys, name='loginpost'),
+    url(r'^login/$', views.userview.login, name='login'),
+    url(r'^feed/$', views.allviews.feed, name='feed'),
+    url(r'^logintosys/$', views.allviews.login_to_sys, name='loginpost'),
     url(r'^register/$', views.register_to_onestory, name='register'),
     url(r'^getaccount/$', views.get_log_in_user, name='get_log_in_user'),
     url(r'^insertarticle/$', views.insert_article, name='insert_article'),

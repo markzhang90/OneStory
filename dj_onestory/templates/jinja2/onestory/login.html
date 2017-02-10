@@ -22,9 +22,9 @@
 
 {% endblock %}
 
-{% include "onestory/fixheader.html" %}
 
 {% block content %}
+
 <div id="loginpage">
     <div id="center" class="ui middle aligned center aligned grid">
 
@@ -88,8 +88,8 @@ $(function() {
         pass_word: '',
         counter: 0,
         return_info: {},
-        passid : 123,
-        nickname : 123,
+        passid : '',
+        nickname : '',
       },
       methods: {
         submitLogin: function() {
