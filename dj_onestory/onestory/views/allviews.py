@@ -24,19 +24,24 @@ def get_log_in_user(request):
         target_url = 'http://localhost:8000/authuser/getuserapi/'
         request_para = urllib.parse.urlencode(data).encode('UTF-8')
         url = urllib.request.Request(target_url, request_para)
-        req = urllib.request.urlopen(url)
-        req_back = req.read().decode('utf-8')
-        if req_back:
-            back_info = json.loads(req_back)
-            back_data = back_info['data']
-            cookie_array = dict()
-            cookie_array['key'] = 'PASSID'
-            cookie_array['value'] = data['pk']
-            cookie_list = list()
-            cookie_list.append(cookie_array)
-            expire_time = settings.COOKIE_EXPIRE_TIME
-            result = response.return_with_cookie(back_data, cookie_list, expire_time)
+        try:
+            req = urllib.request.urlopen(url)
+            req_back = req.read().decode('utf-8')
+            if req_back:
+                back_info = json.loads(req_back)
+                back_data = back_info['data']
+                cookie_array = dict()
+                cookie_array['key'] = 'PASSID'
+                cookie_array['value'] = data['pk']
+                cookie_list = list()
+                cookie_list.append(cookie_array)
+                expire_time = settings.COOKIE_EXPIRE_TIME
+                result = response.return_with_cookie(back_data, cookie_list, expire_time)
+                return result
+        except Exception as e:
+            result = response.return_with_error()  
             return result
+            
 
     result = response.return_with_error()
     return result

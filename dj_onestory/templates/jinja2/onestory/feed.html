@@ -110,6 +110,7 @@ $(function() {
                 inputdata['username'] = 'tom'
                 inputdata['password'] = 123
                 inputdata['csrfmiddlewaretoken'] = "{{ csrf_token }}"
+                
                 $.ajax({
                     type: "POST",
                     url: "{{ url("onestory:loginpost") }}",

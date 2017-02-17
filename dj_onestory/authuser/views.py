@@ -87,7 +87,7 @@ def login_api(request):
         if user and user.is_authenticated():
             try:
                 redis_obj = RedisManager()
-            except Exception as e:
+            except ConnectionError as e:
                 result = response.return_with_error()
                 return result
             # auth.login(request, user)
@@ -154,9 +154,9 @@ def register_api(request):
             result = response.return_with_error()
             return result
 
-
     result = response.return_with_error()
     return result
+
 
 @csrf_exempt
 def logout_api(request):

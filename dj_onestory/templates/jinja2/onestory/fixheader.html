@@ -1,7 +1,7 @@
 <div id="header-top">
 <div class="ui large top fixed menu">
     <div class="ui container">
-    	<a v-for="(item,key) in loginheaders" :href="item.url" :class=" [ pagename == item.name ? 'item active' : 'item' ]" > ${ item.name }</a>
+    	<a v-for="(item,key) in unloginheaders" :href="item.url" :class=" [ pagename == item.name ? 'item active' : 'item' ]" > ${ item.name }</a>
     </div>
 </div>
 </div>
@@ -19,9 +19,9 @@ $(function() {
 	        {'name':'Setting' , 'url': '#'},
         ],
         unloginheaders : [
-			{'Home' : 'loacalhost'}, 
-	        {'Profile' : '127.0.0.1'},
-	        {'Setting' : '127.0.0.1'},
+			{'name':'Home', 'url' : "#"}, 
+	        {'name':'Profile', 'url' : "#"},
+	        {'name':'Setting' , 'url': '#'},
         ],
       },
       methods: {
