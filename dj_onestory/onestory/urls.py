@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     url(r'^login/$', views.userview.login, name='login'),
     url(r'^feed/$', views.allviews.feed, name='feed'),
+    url(r'^edit/$', views.userview.edit, name='edit'),
     url(r'^logintosys/$', views.allviews.login_to_sys, name='loginpost'),
     url(r'^register/$', views.register_to_onestory, name='register'),
     url(r'^getaccount/$', views.get_log_in_user, name='get_log_in_user'),

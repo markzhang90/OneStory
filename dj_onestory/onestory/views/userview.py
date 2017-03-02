@@ -19,9 +19,9 @@ def login(request):
     return render(request, 'onestory/login.html', context)
 
 
-def index(request):
-
+def edit(request):
+	
     context = {'header_text': 'Home'}
-    return render(request, 'onestory/login.html', context)
+    return render(request, 'onestory/edit.html', context)
 
 
