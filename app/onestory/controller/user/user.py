@@ -7,7 +7,10 @@ from app.onestory.models.data.mysql import conn
 class MainHandler(base.BaseHandler):
     def get(self):
         mysql = conn.MySql()
-        mysql.get_connection()
+        mysql2 = conn.MySql()
+        print(mysql.get_connection())
+        print(mysql2.get_connection())
+        print(mysql is mysql2)
         self.write('<a href="%s">link to story 1</a>' %
                    self.reverse_url("story", "1"))
 
