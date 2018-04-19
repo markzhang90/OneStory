@@ -2,9 +2,11 @@
 # -*- coding: UTF-8 -*-
 from app.onestory.controller.base import base
 from app.onestory.models.data.mysql import conn
+import app.onestory.library.common as comm
 
 
 class MainHandler(base.BaseHandler):
+    @comm.decorator
     def get(self):
         mysql = conn.MySql()
         mysql2 = conn.MySql()
