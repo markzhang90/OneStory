@@ -1,13 +1,12 @@
 import pymysql.cursors
 import app.onestory.conf.config as config
+from contextlib import contextmanager
 
 
 class MySql(object):
     __first_init = True
 
     def __new__(cls):
-        print("in new")
-        print(cls)
         if not hasattr(cls, 'instance'):
             cls.instance = super(MySql, cls).__new__(cls)
         return cls.instance
@@ -19,7 +18,6 @@ class MySql(object):
 
     def get_connection(self, dbname="onestory"):
         if dbname not in self.connection:
-            print(111)
             db_host = config.load_config("db", "db_host")
             db_port = config.load_config("db", "db_port")
             db_user = config.load_config("db", "db_user")
@@ -31,5 +29,25 @@ class MySql(object):
                                          db=dbname,
                                          charset='utf8mb4',
                                          cursorclass=pymysql.cursors.DictCursor)
+            connection.autocommit(1)
             self.connection[dbname] = connection
         return self.connection[dbname]
+
+    @contextmanager
+    def get_cursor(self, dbname="onestory"):
+        current_conn = self.get_connection(dbname)
+        cursor = current_conn.cursor()
+        try:
+            yield cursor
+        finally:
+            cursor.close()
+
+    def done_and_close(self, dbname="onestory"):
+        current_conn = self.connection.pop(dbname)
+        current_conn.close()
+
+    def query(self, query, data):
+        with self.get_cursor() as cursor:
+            return cursor.execute(query, data)
+
+
