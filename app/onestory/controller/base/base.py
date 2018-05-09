@@ -1,7 +1,7 @@
 import tornado.web
 import app.onestory.library.common as comm
 import app.onestory.library.customErr as customErr
-from app.onestory.models.data.mysql import alchemyConn
+from app.onestory.service.data.mysql import alchemyConn
 
 
 class BaseHandler(tornado.web.RequestHandler):

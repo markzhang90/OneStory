@@ -1,39 +1,46 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from app.onestory.models.data.mysql import conn, alchemyConn
-import app.onestory.library.customErr as customErr
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, TEXT
 import hashlib
+
+from sqlalchemy import Column, Integer, String, TEXT
+from sqlalchemy.ext.declarative import declarative_base
+
+import app.onestory.library.customErr as customErr
+from app.onestory.service.data.mysql import conn
+from app.onestory.service.models.base import OperationBase
 
 Base = declarative_base()
 
 
-class UserOperation(object):
-
-    session = None
-
-    def __init__(self):
-        if self.session is None:
-            self.load_session()
-
-    def load_session(self):
-        mysqlConn = alchemyConn.MysqlConn()
-        Session = mysqlConn.get_session()
-        self.session = Session()
-
-    def __del__(self):
-        if self.session is not None:
-            self.session.close()
-            self.session = None
+class UserOperation(OperationBase):
 
     def insert_alchemy_user(self, user_info):
         if self.session is None:
             self.load_session()
         self.session.add(user_info)
-        self.session.commit()
+        try:
+            self.session.commit(user_info)
+        except Exception as e:
+            self.session.rollback()
+            raise e
         return True
+
+    def query_user_info(self, user_info):
+        if self.session is None:
+            self.load_session()
+        if user_info.passid is None and user_info.openid is None:
+            raise customErr.CustomErr(customErr.CustomErr.obj_err_code, 'user identify get failure')
+        try:
+            if user_info.openid is not None and user_info.openid != 0:
+                res_user = self.session.query(UserInfo).filter_by(openid=user_info.openid).one()
+            else:
+                res_user = self.session.query(UserInfo).filter_by(passid=user_info.passid).one()
+        except Exception as e:
+            self.session.rollback()
+            raise e
+        return res_user
+
 
     @classmethod
     def insert_new_user(cls, user_info):
@@ -44,9 +51,10 @@ class UserOperation(object):
         sql = 'INSERT INTO user_profile (openid, passid, email, phone, password, update_time, nick_name, avatar, ' \
               'ext, active) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         data = (
-        user_info.openid, user_info.passid, user_info.email, user_info.phone, user_info.password, user_info.update_time,
-        user_info.nick_name, user_info.avatar,
-        user_info.ext, user_info.active)
+            user_info.openid, user_info.passid, user_info.email, user_info.phone, user_info.password,
+            user_info.update_time,
+            user_info.nick_name, user_info.avatar,
+            user_info.ext, user_info.active)
 
         with new_conn.get_cursor() as cursor:
             try:
