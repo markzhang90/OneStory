@@ -1,16 +1,39 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from app.onestory.models.data.mysql import conn
+from app.onestory.models.data.mysql import conn, alchemyConn
 import app.onestory.library.customErr as customErr
-
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, TEXT
 import hashlib
+
+Base = declarative_base()
 
 
 class UserOperation(object):
 
+    session = None
+
     def __init__(self):
-        pass
+        if self.session is None:
+            self.load_session()
+
+    def load_session(self):
+        mysqlConn = alchemyConn.MysqlConn()
+        Session = mysqlConn.get_session()
+        self.session = Session()
+
+    def __del__(self):
+        if self.session is not None:
+            self.session.close()
+            self.session = None
+
+    def insert_alchemy_user(self, user_info):
+        if self.session is None:
+            self.load_session()
+        self.session.add(user_info)
+        self.session.commit()
+        return True
 
     @classmethod
     def insert_new_user(cls, user_info):
@@ -20,8 +43,10 @@ class UserOperation(object):
         new_conn = conn.MySql()
         sql = 'INSERT INTO user_profile (openid, passid, email, phone, password, update_time, nick_name, avatar, ' \
               'ext, active) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        data = (user_info.openid, user_info.passid, user_info.email, user_info.phone, user_info.password, user_info.update_time, user_info.nick_name, user_info.avatar,
-                user_info.ext, user_info.active)
+        data = (
+        user_info.openid, user_info.passid, user_info.email, user_info.phone, user_info.password, user_info.update_time,
+        user_info.nick_name, user_info.avatar,
+        user_info.ext, user_info.active)
 
         with new_conn.get_cursor() as cursor:
             try:
@@ -64,20 +89,43 @@ class UserOperation(object):
         return user_info
 
 
-class UserInfo(object):
+class UserInfo(Base):
+    __tablename__ = 'user_profile'
+    id = Column(Integer, primary_key=True)
+    nick_name = Column(String(10), nullable=False)
+    openid = Column(String(64), nullable=False, unique=True)
+    passid = Column(String(64), nullable=False, unique=True)
+    email = Column(String(255), nullable=False)
+    password = Column(String(255), nullable=False)
+    avatar = Column(String(255), nullable=False)
+    active = Column(Integer, nullable=False)
+    ext = Column(TEXT, nullable=False)
+    phone = Column(Integer, nullable=False)
+    update_time = Column(Integer, nullable=False)
 
-    def __init__(self, user_obj={}):
-        self.id = user_obj['id'] if 'id' in user_obj else None
-        self.openid = user_obj['openid'] if 'openid' in user_obj else None
-        self.passid = user_obj['passid'] if 'passid' in user_obj else None
-        self.email = user_obj['email'] if 'email' in user_obj else None
-        self.phone = user_obj['phone'] if 'phone' in user_obj else 0
-        self.password = user_obj['password'] if 'password' in user_obj else None
-        self.update_time = user_obj['update_time'] if 'update_time' in user_obj else None
-        self.nick_name = user_obj['nick_name'] if 'nick_name' in user_obj else None
-        self.avatar = user_obj['avatar'] if 'avatar' in user_obj else None
-        self.ext = user_obj['ext'] if 'ext' in user_obj else ''
-        self.active = user_obj['active'] if 'active' in user_obj else 1
+    def __init__(self,
+                 pid=None,
+                 openid=None,
+                 passid=None,
+                 email=None,
+                 phone=None,
+                 password=None,
+                 update_time=0,
+                 nick_name=None,
+                 avatar=None,
+                 ext=None,
+                 active=1):
+        self.id = pid
+        self.openid = openid
+        self.passid = passid
+        self.email = email
+        self.phone = phone
+        self.password = password
+        self.update_time = update_time
+        self.nick_name = nick_name
+        self.avatar = avatar
+        self.ext = ext
+        self.active = active
 
     @staticmethod
     def encode_password(password):

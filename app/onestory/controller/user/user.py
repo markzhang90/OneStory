@@ -4,12 +4,14 @@ from app.onestory.controller.base import base
 import app.onestory.library.common as comm
 import app.onestory.library.customErr as customErr
 from app.onestory.models.service.user import user
+import app.onestory.models.data.mysql.alchemyConn as alchemyConn
 import time, random
 
 
 class MainHandler(base.BaseHandler):
     @comm.decorator
     def get(self):
+        alchemyConn.MysqlConn()
         self.write('<a href="%s">link to story 1</a>' %
                    self.reverse_url("story", "1"))
 
@@ -42,7 +44,6 @@ class GetUserInfoHandler(base.BaseHandler):
             return self.finish_out(e.error_code, e.error_info, {})
 
 
-
 class InsertNewUserHandler(base.BaseHandler):
 
     @comm.decorator
@@ -71,13 +72,26 @@ class InsertNewUserHandler(base.BaseHandler):
         my_args = self.get_vars
         my_args['passid'] = str(load_time * 10000 + random.randint(1, 9999))
         my_args['password'] = user.UserInfo.encode_password(my_args['password'])
-        user_info = user.UserInfo(my_args)
+        user_info = user.UserInfo(
+            nick_name=my_args['nick_name'],
+            password=my_args['password'],
+            email=my_args['email'],
+            phone=my_args['phone'],
+            openid=my_args['openid'],
+            passid=my_args['passid'],
+            avatar=my_args['avatar'],
+            ext=my_args['ext'],
+            update_time=my_args['update_time'],
+            active=my_args['active'],
+        )
 
         try:
-            res = user.UserOperation.insert_new_user(user_info)
+            userop = user.UserOperation()
+            res = userop.insert_alchemy_user(user_info)
         except Exception as e:
+            print(e)
             res = False
         if not res:
             return self.finish_out(customErr.CustomErr.common_err_code, 'insert user fail', res)
 
-        return self.finish_out(10000, 'success', user_info.get_clean_user_info())
+        return self.finish_out(10000, 'success', user_info.get_all_user())

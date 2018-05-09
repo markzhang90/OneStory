@@ -1,6 +1,7 @@
 import tornado.web
 import app.onestory.library.common as comm
 import app.onestory.library.customErr as customErr
+from app.onestory.models.data.mysql import alchemyConn
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -9,7 +10,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def initialize(self):
         pass
-
+    def on_finish(self):
+        alchemyConn.MysqlConn
     def finish_out(self, code, msg, out_arr):
         output = {
             'code': code,
