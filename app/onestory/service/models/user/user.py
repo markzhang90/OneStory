@@ -37,7 +37,6 @@ class UserOperation(OperationBase):
             else:
                 res_user = self.session.query(UserInfo).filter_by(passid=user_info.passid).one()
         except Exception as e:
-            self.session.rollback()
             raise e
         return res_user
 

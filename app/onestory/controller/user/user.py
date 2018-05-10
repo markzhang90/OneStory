@@ -6,6 +6,7 @@ import app.onestory.library.customErr as customErr
 from app.onestory.service.models.user import user
 import app.onestory.service.data.mysql.alchemyConn as alchemyConn
 import time, random
+from sqlalchemy import orm
 
 
 class MainHandler(base.BaseHandler):
@@ -43,6 +44,10 @@ class GetUserInfoHandler(base.BaseHandler):
             return self.finish_out(customErr.CustomErr.success_code, 'success', res.get_clean_user_info())
         except customErr.CustomErr as e:
             return self.finish_out(e.error_code, e.error_info, {})
+        except orm.exc.NoResultFound as e:
+            return self.finish_out(customErr.CustomErr.user_not_find_err, 'get user fail', {})
+        except Exception as e:
+            return self.finish_out(customErr.CustomErr.common_err_code, e.__str__(), {})
 
 
 class InsertNewUserHandler(base.BaseHandler):
