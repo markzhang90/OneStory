@@ -19,12 +19,17 @@ class OperationBase(object):
 
     def __del__(self):
         if self.session is not None:
+            print("close session")
             self.session.close()
             self.session = None
 
-    def insert_alchemy(self, new_object):
+    def insert_new_obj(self, new_object):
         if self.session is None:
             self.load_session()
         self.session.add(new_object)
-        self.session.commit()
+        try:
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise e
         return True

@@ -3,6 +3,7 @@ class CustomErr(Exception):
     success_code = 10000
     common_err_code = 10001
     obj_err_code = 11001
+    value_err_code = 10002
     user_not_find_err = 10002
 
     def __init__(self, err_code, err_msg):

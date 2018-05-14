@@ -4,23 +4,22 @@
 import hashlib
 
 from sqlalchemy import Column, Integer, String, TEXT
-from sqlalchemy.ext.declarative import declarative_base
-
 import app.onestory.library.customErr as customErr
-from app.onestory.service.data.mysql import conn
-from app.onestory.service.models.base import OperationBase
-
-Base = declarative_base()
+from app.onestory.service.data.mysql import mysql_conn
+from app.onestory.service.data.redis import redis_conn
+from app.onestory.service.models.base import OperationBase, Base
+import json
 
 
 class UserOperation(OperationBase):
+    __cache_time = 6000
 
     def insert_alchemy_user(self, user_info):
         if self.session is None:
             self.load_session()
         self.session.add(user_info)
         try:
-            self.session.commit(user_info)
+            self.session.commit()
         except Exception as e:
             self.session.rollback()
             raise e
@@ -40,13 +39,64 @@ class UserOperation(OperationBase):
             raise e
         return res_user
 
+    def try_get_user_by_cache(self, user_info):
+        try:
+            cache = self.get_cached_user(user_info)
+            if cache is None:
+                db_user = self.query_user_info(user_info)
+                self.cache_user(db_user)
+                return db_user
+        except Exception as e:
+            cache = None
+        return cache
+
+    def cache_user(self, user_info):
+        if user_info.passid is not None:
+            serach_key = 'passid:%s' % user_info.passid
+        else:
+            serach_key = 'openid:%s' % user_info.openid
+        redis = redis_conn.MyRedis()
+        redis_co = redis.get_connect_from_pool()
+        return redis_co.setex(serach_key, json.dumps(user_info.get_all_user()), self.__cache_time)
+
+    def get_cached_user(self, user_info):
+        if user_info.passid is None and user_info.openid is None:
+            raise customErr.CustomErr(customErr.CustomErr.obj_err_code, 'user identify get failure')
+        if user_info.passid is not None:
+            serach_key = 'passid:%s' % user_info.passid
+        else:
+            serach_key = 'openid:%s' % user_info.openid
+        redis = redis_conn.MyRedis()
+        redis_co = redis.get_connect_from_pool()
+        if redis_co is None:
+            return None
+        res = redis_co.get(serach_key)
+        if res is False or res is None:
+            redis_co.delete(serach_key)
+            return None
+        else:
+            load_res = json.loads(str(res, encoding="utf-8"))
+            if type(load_res) == dict:
+                user_info.id = load_res['id']
+                user_info.openid = load_res['openid']
+                user_info.passid = load_res['passid']
+                user_info.email = load_res['email']
+                user_info.phone = load_res['phone']
+                user_info.password = load_res['password']
+                user_info.update_time = load_res['update_time']
+                user_info.nick_name = load_res['nick_name']
+                user_info.avatar = load_res['avatar']
+                user_info.ext = load_res['ext']
+                user_info.active = load_res['active']
+                return user_info
+        return None
 
     @classmethod
     def insert_new_user(cls, user_info):
 
         if not isinstance(user_info, UserInfo):
             raise customErr.CustomErr(customErr.CustomErr.obj_err_code, 'user_info object failure')
-        new_conn = conn.MySql()
+        new_conn = mysql_conn.MySql()
         sql = 'INSERT INTO user_profile (openid, passid, email, phone, password, update_time, nick_name, avatar, ' \
               'ext, active) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         data = (
@@ -77,7 +127,7 @@ class UserOperation(OperationBase):
             op = 'passid'
             val = pass_id
 
-        new_conn = conn.MySql()
+        new_conn = mysql_conn.MySql()
         sql = 'SELECT * FROM user_profile where ' + op + ' = %s'
         data = (val,)
 
@@ -97,11 +147,11 @@ class UserOperation(OperationBase):
 
 
 class UserInfo(Base):
-    __tablename__ = 'user_profile'
+    __tablename__ = "user_profile"
     id = Column(Integer, primary_key=True)
     nick_name = Column(String(10), nullable=False)
-    openid = Column(String(64), nullable=False, unique=True)
-    passid = Column(String(64), nullable=False, unique=True)
+    openid = Column(String(255), nullable=False, unique=True)
+    passid = Column(String(255), nullable=False, unique=True)
     email = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
     avatar = Column(String(255), nullable=False)
@@ -173,3 +223,6 @@ class UserInfo(Base):
             'ext': self.ext,
             'active': self.active,
         }
+
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self.id)

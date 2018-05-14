@@ -17,15 +17,6 @@ class MainHandler(base.BaseHandler):
                    self.reverse_url("story", "1"))
 
 
-class StoryHandler(base.BaseHandler):
-    def initialize(self, db):
-        self.db = db
-        print(self.db)
-
-    def get(self, story_id):
-        self.write("this is story %s" % story_id)
-
-
 class GetUserInfoHandler(base.BaseHandler):
     @comm.decorator
     def get(self, *args, **kwargs):

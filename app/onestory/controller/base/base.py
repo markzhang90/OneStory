@@ -1,7 +1,6 @@
 import tornado.web
 import app.onestory.library.common as comm
 import app.onestory.library.customErr as customErr
-from app.onestory.service.data.mysql import alchemyConn
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -10,8 +9,10 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def initialize(self):
         pass
+
     def on_finish(self):
-        alchemyConn.MysqlConn
+        self.__get_vars = {}
+
     def finish_out(self, code, msg, out_arr):
         output = {
             'code': code,
@@ -39,6 +40,13 @@ class BaseHandler(tornado.web.RequestHandler):
                 else:
                     self.__get_vars[key] = find_var
         return self.__get_vars
+
+    def required_user_login(self):
+        cookie_pass = self.get_cookie('passid', None)
+        if cookie_pass is None:
+            self.redirect('login')
+        else:
+            self.__get_vars['_passid'] = cookie_pass
 
     @property
     def get_vars(self):
