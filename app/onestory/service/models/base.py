@@ -8,9 +8,9 @@ class OperationBase(object):
 
     session = None
 
-    def __init__(self):
+    def __init__(self, Session):
         if self.session is None:
-            self.load_session()
+            self.session = Session()
 
     def load_session(self):
         mysqlConn = alchemyConn.MysqlConn()
@@ -18,6 +18,12 @@ class OperationBase(object):
         self.session = Session()
 
     def __del__(self):
+        if self.session is not None:
+            # self.session.close()
+            # self.session = None
+            pass
+
+    def close_session(self):
         if self.session is not None:
             print("close session")
             self.session.close()
@@ -32,4 +38,4 @@ class OperationBase(object):
         except Exception as e:
             self.session.rollback()
             raise e
-        return True
+        return new_object

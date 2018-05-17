@@ -7,6 +7,7 @@ from app.onestory.service.models.user import user
 import app.onestory.service.data.mysql.alchemyConn as alchemyConn
 import time, random
 from sqlalchemy import orm
+from tornado import (gen, web)
 
 
 class MainHandler(base.BaseHandler):
@@ -19,19 +20,24 @@ class MainHandler(base.BaseHandler):
 
 class GetUserInfoHandler(base.BaseHandler):
     @comm.decorator
+    @web.asynchronous
+    @gen.coroutine
     def get(self, *args, **kwargs):
+        self.required_user_login()
         arg_list = {
             'openid': 0,
-            'passid': 0,
+            'passid': self.get_vars['_passid'],
         }
+        print(arg_list)
         try:
             self.must_get_args_check(arg_list)
             my_args = self.get_vars
             if my_args['passid'] == 0 and my_args['openid'] == 0:
                 raise customErr.CustomErr(customErr.CustomErr.common_err_code, 'params missing')
             user_info = user.UserInfo(passid=my_args['passid'], openid=my_args['openid'])
-            userop = user.UserOperation()
+            userop = user.UserOperation(self.Session)
             res = userop.query_user_info(user_info)
+            self.set_cookie("passid", res.passid, expires_days=self.cookie_expire_days)
             return self.finish_out(customErr.CustomErr.success_code, 'success', res.get_clean_user_info())
         except customErr.CustomErr as e:
             return self.finish_out(e.error_code, e.error_info, {})
@@ -43,6 +49,8 @@ class GetUserInfoHandler(base.BaseHandler):
 
 class InsertNewUserHandler(base.BaseHandler):
     @comm.decorator
+    @web.asynchronous
+    @gen.coroutine
     def get(self, *args, **kwargs):
         load_time = int(time.time())
         arg_list = {
@@ -82,7 +90,7 @@ class InsertNewUserHandler(base.BaseHandler):
         )
 
         try:
-            userop = user.UserOperation()
+            userop = user.UserOperation(self.Session)
             res = userop.insert_alchemy_user(user_info)
         except Exception as e:
             print(e)

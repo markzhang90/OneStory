@@ -1,6 +1,5 @@
-import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 import app.onestory.conf.config as config
 
 
@@ -30,7 +29,7 @@ class MysqlConn(object):
             ENGINE = create_engine(engine_template, max_overflow=20, pool_size=20, echo_pool=True)
             self.engines[dbname] = ENGINE
 
-        _DBSession = sessionmaker(bind=self.engines[dbname])
+        _DBSession = scoped_session(sessionmaker(bind=self.engines[dbname], autoflush=True))
         return _DBSession
 
 

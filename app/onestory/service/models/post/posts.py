@@ -7,7 +7,6 @@ from sqlalchemy import Column, Integer, String, TEXT
 
 
 class PostOperation(OperationBase):
-
     def get_posts_list(self, passid, storyid=None, time_start=None, time_end=None, orderby='desc', limit=10, page=1):
         if passid is None or passid == 0:
             raise customErr.CustomErr(customErr.CustomErr.value_err_code, 'passid required')
@@ -22,9 +21,9 @@ class PostOperation(OperationBase):
         if time_end is not None and time_end != -1:
             query = query.filter(PostInfo.create_date <= time_end)
         if orderby != "desc":
-            query = query.order_by('create_date asc')
+            query = query.order_by(PostInfo.create_date.asc())
         else:
-            query = query.order_by('create_date desc')
+            query = query.order_by(PostInfo.create_date.desc())
         if page < 1:
             page = 1
         if limit < 0:

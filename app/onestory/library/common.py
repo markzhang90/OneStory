@@ -4,8 +4,8 @@ import json
 
 def decorator(func):
     def wrapper(*args, **kwargs):
-        print("time checker start")
         start_time = time.time()
+        print("time checker start " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time)))
         func(*args, **kwargs)
         end_time = time.time()
         print(end_time - start_time)

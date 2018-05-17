@@ -1,19 +1,32 @@
 import tornado.web
 import app.onestory.library.common as comm
 import app.onestory.library.customErr as customErr
-
+from app.onestory.service.data.mysql import alchemyConn
+from concurrent.futures import ThreadPoolExecutor
 
 class BaseHandler(tornado.web.RequestHandler):
 
+    cookie_expire_days = 3
     __get_vars = {}
+    Session = None
+    executor = ThreadPoolExecutor(10)
 
     def initialize(self):
         pass
 
+    def prepare(self):
+        print("start init")
+        mysqlConn = alchemyConn.MysqlConn()
+        Session = mysqlConn.get_session()
+        self.Session = Session
+
     def on_finish(self):
         self.__get_vars = {}
+        self.Session.remove()
+        print("finish")
+        print(self.Session)
 
-    def finish_out(self, code, msg, out_arr):
+    def finish_out(self, code, msg, out_arr={}):
         output = {
             'code': code,
             'message': msg,
@@ -26,7 +39,6 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def must_get_args_check(self, arg_list):
 
-        self.__get_vars = {}
         for key, val in arg_list.items():
             find_var = self.get_argument(key, None)
             if val is None:
