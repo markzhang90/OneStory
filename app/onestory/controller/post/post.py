@@ -62,6 +62,31 @@ class AddPostHandler(base.BaseHandler):
         return post_op.insert_new_obj(post_data)
 
 
+class GetPostInfoById(base.BaseHandler):
+
+    @comm.decorator
+    @web.asynchronous
+    def get(self, *args, **kwargs):
+        self.required_user_login()
+        gen.sleep(10)
+        arg_list = {
+            'id': 0,
+            'passid':self.get_vars['_passid'],
+        }
+
+        try:
+            self.must_get_args_check(arg_list)
+            my_args = self.get_vars
+            posts_op = posts.PostOperation(self.Session)
+            post_info = posts_op.get_post_by_id(my_args['id'], my_args['passid'])
+            if isinstance(post_info, posts.PostInfo):
+                return self.finish_out(customErr.CustomErr.success_code, 'success', post_info.get_post())
+            else:
+                raise customErr.CustomErr(customErr.CustomErr.post_not_find_err, '获取文章失败')
+        except Exception as e:
+            return self.finish_out(customErr.CustomErr.post_not_find_err, e.__str__())
+
+
 class GetPostInfoHandler(base.BaseHandler):
     @comm.decorator
     @web.asynchronous

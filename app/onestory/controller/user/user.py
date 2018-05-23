@@ -28,7 +28,6 @@ class GetUserInfoHandler(base.BaseHandler):
             'openid': 0,
             'passid': self.get_vars['_passid'],
         }
-        print(arg_list)
         try:
             self.must_get_args_check(arg_list)
             my_args = self.get_vars

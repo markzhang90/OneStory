@@ -34,6 +34,16 @@ class PostOperation(OperationBase):
         res = query.all()
         return res
 
+    def get_post_by_id(self, id, passid):
+        if id is None or id == 0:
+            raise customErr.CustomErr(customErr.CustomErr.value_err_code, 'id required')
+        if passid is None or passid == 0:
+            raise customErr.CustomErr(customErr.CustomErr.value_err_code, 'id required')
+        query = self.session.query(PostInfo)
+        query = query.filter_by(passid=passid, id=id)
+        res = query.one()
+        return res
+
     def get_posts_list_count(self, passid, storyid=None, time_start=None, time_end=None, orderby='desc'):
         if passid is None or passid == 0:
             raise customErr.CustomErr(customErr.CustomErr.value_err_code, 'passid required')

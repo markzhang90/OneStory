@@ -5,6 +5,7 @@ class CustomErr(Exception):
     obj_err_code = 11001
     value_err_code = 10002
     user_not_find_err = 10002
+    post_not_find_err = 20002
 
     def __init__(self, err_code, err_msg):
         super().__init__(self)
